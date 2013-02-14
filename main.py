@@ -1,10 +1,16 @@
 #!/usr/bin/python
 
-# open a microphone in pyAudio and listen for taps
-
+from datetime import datetime
+from time import sleep
 import pyaudio
 import struct
 import math
+import numpy as np
+from matplotlib import mlab, pyplot
+import pymongo
+
+#Python 2.x:
+#from __future__ import division
 
 INITIAL_TAP_THRESHOLD = 0.010
 FORMAT = pyaudio.paInt16 
@@ -32,7 +38,6 @@ def get_rms( block ):
     format = "%dh"%(count)
     shorts = struct.unpack( format, block )
 
-    # iterate over the block.
     sum_squares = 0.0
     for sample in shorts:
         # sample is a signed short in +/- 32768. 
@@ -106,7 +111,6 @@ class TapTester(object):
                 self.tap_threshold *= 1.1
         else:            
             # quiet block.
-
             if 1 <= self.noisycount <= MAX_TAP_BLOCKS:
                 self.tapDetected()
                 print "\t"
@@ -116,9 +120,36 @@ class TapTester(object):
             if self.quietcount > UNDERSENSITIVE:
                 # turn up the sensitivity
                 self.tap_threshold *= 0.9
+        return amplitude if amplitude > self.tap_threshold else False
 
 if __name__ == "__main__":
     tt = TapTester()
+    mclient = pymongo.MongoClient("localhost", 27017)
+    db = mclient.soundlog
+    for i in range(2000000):
+        amp = tt.listen()
+        if amp:
+            db.amps.save({"a":amp,"time" : datetime.now()})
+    Fs = 48000
+    f = np.arange(1, 9) * 2000
+    t = np.arange(8 * Fs) / Fs
+    x = np.empty(t.shape)
+    for i in range(8):
+        x[i*Fs:(i+1)*Fs] = np.cos(2*np.pi * f[i] * t[i*Fs:(i+1)*Fs])
 
-    for i in range(1000):
-        tt.listen()
+    w = np.hamming(512)
+    Pxx, freqs, bins = mlab.specgram(x, NFFT=512, Fs=Fs, window=w,
+                                 noverlap=464)
+
+    Pxx_dB = np.log10(Pxx)
+    pyplot.subplots_adjust(hspace=0.4)
+    
+    pyplot.subplot(211)
+    ex1 = bins[0], bins[-1], freqs[0], freqs[-1]
+    pyplot.imshow(np.flipud(Pxx_dB), extent=ex1)
+    pyplot.axis('auto')
+    pyplot.axis(ex1)
+    pyplot.xlabel('time (s)')
+    pyplot.ylabel('freq (Hz)')
+    pyplot.show()
+

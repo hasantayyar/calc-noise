@@ -28,15 +28,6 @@ pyplot.axis(ex1)
 pyplot.xlabel('time (s)')
 pyplot.ylabel('freq (Hz)')
 
-#zoom in at t=4s to show transient
-
-pyplot.subplot(212)
-n1, n2 = int(3.991/8*len(bins)), int(4.009/8*len(bins))
-ex2 = bins[n1], bins[n2], freqs[0], freqs[-1]
-pyplot.imshow(np.flipud(Pxx_dB[:,n1:n2]), extent=ex2)
-pyplot.axis('auto')
-pyplot.axis(ex2)
-pyplot.xlabel('time (s)')
-pyplot.ylabel('freq (Hz)')
-
+#for item in db.my_collection.find():
+#   print item["x"]
 pyplot.show()
