@@ -1,12 +1,11 @@
 #!/usr/bin/python
-
+# Thanks to     
 from datetime import datetime
 from time import sleep
 import pyaudio
 import struct
 import math
 import numpy as np
-from matplotlib import mlab, pyplot
 import pymongo
 
 #Python 2.x:
@@ -23,8 +22,7 @@ INPUT_FRAMES_PER_BLOCK = int(RATE*INPUT_BLOCK_TIME)
 OVERSENSITIVE = 15.0/INPUT_BLOCK_TIME                    
 # if we get this many quiet blocks in a row, decrease the threshold
 UNDERSENSITIVE = 120.0/INPUT_BLOCK_TIME 
-# if the noise was longer than this many blocks, it's not a 'tap'
-MAX_TAP_BLOCKS = 0.15/INPUT_BLOCK_TIME
+MAX_NOISE_BLOCKS = 0.1/INPUT_BLOCK_TIME
 
 def get_rms( block ):
     # RMS amplitude is defined as the square root of the 
@@ -52,7 +50,7 @@ class TapTester(object):
         self.pa = pyaudio.PyAudio()
         self.stream = self.open_mic_stream()
         self.tap_threshold = INITIAL_TAP_THRESHOLD
-        self.noisycount = MAX_TAP_BLOCKS+1 
+        self.noisycount = MAX_NOISE_BLOCKS+1 
         self.quietcount = 0 
         self.errorcount = 0
 
@@ -78,7 +76,6 @@ class TapTester(object):
 
     def open_mic_stream( self ):
         device_index = self.find_input_device()
-
         stream = self.pa.open(   format = FORMAT,
                                  channels = CHANNELS,
                                  rate = RATE,
@@ -111,7 +108,7 @@ class TapTester(object):
                 self.tap_threshold *= 1.1
         else:            
             # quiet block.
-            if 1 <= self.noisycount <= MAX_TAP_BLOCKS:
+            if 1 <= self.noisycount <= MAX_NOISE_BLOCKS:
                 self.tapDetected()
                 print "\t"
                 print amplitude
@@ -126,30 +123,11 @@ if __name__ == "__main__":
     tt = TapTester()
     mclient = pymongo.MongoClient("localhost", 27017)
     db = mclient.soundlog
-    for i in range(2000000):
+    for i in range(3600):
         amp = tt.listen()
         if amp:
-            db.amps.save({"a":amp,"time" : datetime.now()})
-    Fs = 48000
-    f = np.arange(1, 9) * 2000
-    t = np.arange(8 * Fs) / Fs
-    x = np.empty(t.shape)
-    for i in range(8):
-        x[i*Fs:(i+1)*Fs] = np.cos(2*np.pi * f[i] * t[i*Fs:(i+1)*Fs])
-
-    w = np.hamming(512)
-    Pxx, freqs, bins = mlab.specgram(x, NFFT=512, Fs=Fs, window=w,
-                                 noverlap=464)
-
-    Pxx_dB = np.log10(Pxx)
-    pyplot.subplots_adjust(hspace=0.4)
-    
-    pyplot.subplot(211)
-    ex1 = bins[0], bins[-1], freqs[0], freqs[-1]
-    pyplot.imshow(np.flipud(Pxx_dB), extent=ex1)
-    pyplot.axis('auto')
-    pyplot.axis(ex1)
-    pyplot.xlabel('time (s)')
-    pyplot.ylabel('freq (Hz)')
-    pyplot.show()
+            print("insert to mongo")
+            saveobj = {"a":amp,"time" : datetime.now()}
+            print(saveobj)
+            db.amps.save(saveobj)
 
