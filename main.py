@@ -127,7 +127,7 @@ if __name__ == "__main__":
         amp = tt.listen()
         if amp:
             print("insert to mongo")
-            saveobj = {"a":amp,"time" : datetime.now()}
+            saveobj = {"a":amp,"date" : datetime.now()}
             print(saveobj)
             db.amps.save(saveobj)
 

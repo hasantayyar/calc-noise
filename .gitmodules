@@ -1,3 +1,0 @@
-[submodule "mongo-metrics"]
-	path = mongo-metrics
-	url = https://github.com/arunoda/mongo-metrics.git

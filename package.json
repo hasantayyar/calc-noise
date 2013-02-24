@@ -13,12 +13,4 @@
     "type": "git",
     "url": "git://github.com/hasantayyar/calc-noise.git"
   },
-  "engines": {
-    "node": ">= 0.8.x",
-    "npm": ">= 1.1.x"
-  },
-  "dependencies": {
-    "mongodb": "1.2.x",
-    "mongo-metrics": "0.1.7"
-  }
 }
