@@ -5,4 +5,4 @@ REQS.
  - sudo pip install matplotlib
 
 
-![screenshot](https://raw.github.com/hasantayyar/calc-noise/master/screenshot.png)
+![screenshot](https://raw.github.com/hasantayyar/calc-noise/master/screenshot.jpg)
