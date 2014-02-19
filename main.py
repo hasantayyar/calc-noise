@@ -2,6 +2,7 @@
 # Thanks to     
 from datetime import datetime
 from time import sleep
+import time
 import pyaudio
 import struct
 import math
@@ -126,8 +127,7 @@ if __name__ == "__main__":
     for i in range(3600):
         amp = tt.listen()
         if amp:
-            print("insert to mongo")
-            saveobj = {"a":amp,"date" : datetime.now()}
+            saveobj = {"a":amp,"t" : time.time() }
             print(saveobj)
             db.amps.save(saveobj)
 

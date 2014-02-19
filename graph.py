@@ -6,13 +6,7 @@ from pylab import *
 #Python 2.x:
 #from __future__ import division
 
-#plot the spectrogram in dB
-#t1 = np.arange(0.0, 5.0, 0.1)
-#t2 = np.arange(0.0, 5.0, 0.02)
-#pyplot.figure(1)
-#pyplot.subplot(211)
-#pyplot.plot(t1, f(t1), 'bo', t2, f(t2), 'k')
-#pyplot.show()
+#plot the spectrogram
 
 """
 dt = 0.0005
@@ -31,7 +25,10 @@ Fs = int(1.0/dt)  # the sampling frequency
 plot(t, x)
 Pxx, freqs, bins, im = specgram(x, NFFT=NFFT, Fs=Fs, noverlap=900,cmap=cm.gist_heat)
 show()
+
 """
+
+
 Fs = 256.0        # Hz
 duration = 1     # seconds
 
@@ -39,17 +36,24 @@ m = pymongo.MongoClient()
 db = m.soundlog
 data = db.amps
 amps = []
+t = []
 for doc in data.find():
+    t.append(double(doc['t']))
     amps.append(double(Fs*doc['a']))
 
-t = np.arange(0, duration, 1 / Fs)
-
+#t = np.arange(0, duration, 1 / Fs)
 
 frequency = 100.0    # Hz
 amplitude = 4.0     # volts
-y = amps #amplitude * np.sin(2 * np.pi * frequency * t)
+y =(amps) #np.sin(2 * np.pi * frequency * t1)
+
+#print t
+#print y
+#quit()
+
 pyplot.plot(t, y)
 pyplot.show()
+
 
 #for item in db.my_collection.find():
 #   print item["x"]
